@@ -1,8 +1,8 @@
 <template>
     <div>
-        <p>componente de mensagem</p>
+        <Message :msg="msg" v-show="msg" />
     </div>
-        <form action="#" class="form">
+        <form class="form" @submit="createBurger">
             <div class="input-container">
                 <label for="name" class="label">Nome</label>
                 <input type="text" id="name" class="input" v-model="name" placeholder="Digite o seu nome">
@@ -10,22 +10,22 @@
             <div class="input-container">
                 <label for="bread" class="label">Escolha o pão: </label>
                 <select name="bread" id="bread" class="input" v-model="bread">
-                    <option value="">Selecione o seu pão</option>
-                    <option value="integral">Integral</option>
+                    <option value="" disabled>Selecione o seu pão</option>
+                    <option v-for="bread in breads" :key="bread.id" :value="bread.tipo">{{ bread.tipo }}</option>
                 </select>
             </div>
             <div class="input-container">
                 <label for="meat" class="label">Escolha a carne do seu Burger: </label>
                 <select name="meat" id="meat" class="input" v-model="meat">
-                    <option value="">Selecione sua carne</option>
-                    <option value="maminha">Maminha</option>
+                    <option value="" disabled>Selecione sua carne</option>
+                    <option v-for="meat in meats" :key="meat.id" :value="meat.tipo">{{ meat.tipo }}</option>
                 </select>
             </div>
             <div class="additional-container">
                 <label for="additional" class="label additional-label">Selecione os adicionais: </label>
-                <div class="checkbox-container">
-                    <input type="checkbox" name="additional" id="additional" class="input checkbox" v-model="additional" value="salame">
-                    <span>Salame</span>
+                <div class="checkbox-container" v-for="additional in additionalData" :key="additional.id">
+                    <input type="checkbox" name="additionals" id="additionals" class="input checkbox" v-model="additionals" :value="additional.tipo">
+                    <span>{{ additional.tipo }}</span>
                 </div>
             </div>
             <div>
@@ -34,13 +34,72 @@
         </form>
 </template>
 <script>
+import Message from './Message.vue'
+
 export default {
     name: 'Form',
     data() {
         return {
-
+            breads: null,
+            meats: null,
+            additionalData: null,
+            name: null,
+            bread: null,
+            meat: null,
+            additionals: [],
+            status: "Solicitado",
+            msg: null
         }
-    }
+    },
+    methods: {
+        async getIngredients() {
+            const req = await fetch("http://localhost:3000/ingredientes");
+            const data = await req.json();
+
+            this.breads = data.paes;
+            this.meats = data.carnes;
+            this.additionalData = data.opcionais;
+        },
+        async createBurger(e) {
+            e.preventDefault();
+
+            const data = {
+                name: this.name,
+                bread: this.bread,
+                meat: this.meat,
+                additionals: Array.from(this.additionals),
+                status: "Solicitado"
+            }
+            
+            const dataJson = JSON.stringify(data);
+            
+            const req = await fetch("http://localhost:3000/burgers", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: dataJson
+            })
+
+            const res = await req.json();
+            
+            // msg de sistema
+            this.msg = `Pedido nº ${res.id} realizado com sucesso!`
+
+            // limpar msg
+            setTimeout(() => this.msg = "", 3000);
+
+            // limpar os campos
+            this.name = "";
+            this.bread = "";
+            this.meat = "";
+            this.additionals = [];
+        }
+    },
+    mounted() {
+        this.getIngredients();
+    },
+    components: {
+        Message
+    },
 }
 </script>
 <style scoped>
@@ -70,8 +129,8 @@ export default {
 
     .additional-container {
         display: flex;
-        flex-direction: row;
         flex-wrap: wrap;
+        margin-bottom: 2rem;
     }
 
     .checkbox-container {
@@ -95,10 +154,5 @@ export default {
         font-weight: bold;
         cursor: pointer;
         margin-bottom: 3rem;
-    }
-
-    .submit-btn:hover {
-        background-color: transparent;
-        border: 2px solid #F29F05;
     }
 </style>

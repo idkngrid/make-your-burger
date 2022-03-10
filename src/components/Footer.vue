@@ -16,6 +16,6 @@ export default {
 
     .footer p {
         text-align: center;
-        padding: 5rem;
+        padding: 5rem 0;
     }
 </style>

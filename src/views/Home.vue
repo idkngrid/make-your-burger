@@ -18,3 +18,9 @@ import Form from '../components/Form.vue'
     }
   }
 </script>
+<style scoped>
+  h1 {
+    margin-bottom: 2.5rem;
+  }
+</style>
+

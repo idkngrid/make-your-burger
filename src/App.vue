@@ -34,6 +34,10 @@ export default {
     color: #2A2A2A;
   }
 
+  .main-container {
+    min-height: 16rem;
+  }
+
   h1 {
     font-size: 2.625rem;
     text-align: center;
